@@ -1,0 +1,10 @@
+.DS_Store
+.idea
+*.log
+tmp/
+debug/
+target/
+kotlin/.gradle/
+kotlin/build
+kotlin/.idea
+*.salive
