@@ -1,4 +1,6 @@
-# Reproducer for a UniFFI bug (?)
+# Reproducer for a UniFFI bug
+
+This is a reproducer for https://github.com/mozilla/uniffi-rs/issues/2600
 
 Running the code:
 
