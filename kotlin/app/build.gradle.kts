@@ -2,7 +2,6 @@ import com.android.build.gradle.internal.tasks.factory.dependsOn
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 import org.jetbrains.kotlin.gradle.tasks.KotlinJvmCompile
 
-
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
@@ -26,8 +25,8 @@ android {
         release {
             isMinifyEnabled = false
             proguardFiles(
-                getDefaultProguardFile("proguard-android-optimize.txt"),
-                "proguard-rules.pro",
+                    getDefaultProguardFile("proguard-android-optimize.txt"),
+                    "proguard-rules.pro",
             )
         }
     }
@@ -35,12 +34,7 @@ android {
         sourceCompatibility = JavaVersion.VERSION_11
         targetCompatibility = JavaVersion.VERSION_11
     }
-    kotlinOptions {
-        jvmTarget = "11"
-    }
-
-
-
+    kotlinOptions { jvmTarget = "11" }
 }
 
 dependencies {
@@ -52,7 +46,6 @@ dependencies {
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
-
 }
 
 tasks.withType<KotlinJvmCompile>().configureEach {
@@ -71,56 +64,43 @@ afterEvaluate {
     val bindingsDirectory = "../kotlin/app/src/main/java/"
 
     val generateLibrust =
-        tasks.register<Exec>("generateLibrust") {
-            workingDir("${project.projectDir}/../../rust")
-            commandLine("pwd")
-            commandLine("cargo", "build", "-p", "librust")
-        }
+            tasks.register<Exec>("generateLibrust") {
+                workingDir("${project.projectDir}/../../rust")
+                commandLine("pwd")
+                commandLine("cargo", "build", "-p", "librust")
+            }
     // Define the task to generate the uniffi bindings for librust
     val uniffiBindings =
-        tasks.register("generateUniFFIBindings") {
-            dependsOn(generateLibrust)
-            doLast {
-                // It seems that the uniffi packagze generates a "*.so" file on linux and a
-                // "*.dylib" on mac
-                // while using the cargo build command from the gradle task above
-                // ("generateLibrust").
-                val uniffiLibraryFilePathPrefix =
-                    "${project.projectDir}/../../rust/target/debug/liblibrust"
-                val uniffiLibraryFile =
-                    file("$uniffiLibraryFilePathPrefix.so").takeIf { it.exists() }
-                        ?: file("$uniffiLibraryFilePathPrefix.dylib")
-                assert(uniffiLibraryFile.exists()) {
-                    "Error: Missing pre-generated uniffy library file in rust/target/*/ directory.\n"
-                }
+            tasks.register("generateUniFFIBindings") {
+                dependsOn(generateLibrust)
+                doLast {
+                    // It seems that the uniffi packagze generates a "*.so" file on linux and a
+                    // "*.dylib" on mac
+                    // while using the cargo build command from the gradle task above
+                    // ("generateLibrust").
+                    val uniffiLibraryFilePathPrefix =
+                            "${project.projectDir}/../../rust/target/debug/liblibrust"
+                    val uniffiLibraryFile =
+                            file("$uniffiLibraryFilePathPrefix.so").takeIf { it.exists() }
+                                    ?: file("$uniffiLibraryFilePathPrefix.dylib")
+                    assert(uniffiLibraryFile.exists()) {
+                        "Error: Missing pre-generated uniffy library file in rust/target/*/ directory.\n"
+                    }
 
-                val processBuilder =
-                    ProcessBuilder(
-                        "cargo",
-                        "run",
-                        "-p",
-                        "uniffi-bindgen",
-                        "generate",
-                        "--library",
-                        uniffiLibraryFile.path,
-                        "--language",
-                        "kotlin",
-                        "--out-dir",
-                        bindingsDirectory,
-                        "--no-format",
-                    )
-                processBuilder.directory(file("${project.projectDir}/../../uniffi-bindgen"))
-                processBuilder.start().waitFor()
+                    val processBuilder =
+                            ProcessBuilder( "./diplomat-build.sh")
+                    processBuilder.directory(file("${project.projectDir}/../"))
+                    processBuilder.start().waitFor()
+                }
+                outputs.dir(bindingsDirectory)
             }
-            outputs.dir(bindingsDirectory)
-        }
 
     tasks["compileDebugKotlin"].dependsOn(uniffiBindings)
 }
+
 java {
     sourceCompatibility = JavaVersion.VERSION_11
     targetCompatibility = JavaVersion.VERSION_11
 }
 
 kotlin { compilerOptions { jvmTarget = org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_11 } }
-
