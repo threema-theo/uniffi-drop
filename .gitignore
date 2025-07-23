@@ -8,3 +8,4 @@ kotlin/.gradle/
 kotlin/build
 kotlin/.idea
 *.salive
+/python/generated/__pycache__/
