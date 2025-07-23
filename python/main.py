@@ -26,13 +26,20 @@ def generate_bindings():
     print("< Generated bindings code")
 
 def test_bindings():
-    from generated.librust import MyStruct256
+    from generated.librust import MyStruct256, MyStruct128
 
     print("Testing the bindings")
     mystruct256 = MyStruct256()
     mystruct256.debug()
     mystruct256.debug()
     mystruct256.debug()
+
+    print("Testing the 128 bindings")
+    mystruct128 = MyStruct128()
+    mystruct128.debug()
+    mystruct128.debug()
+    mystruct128.debug()
+
 
 
 def main():
